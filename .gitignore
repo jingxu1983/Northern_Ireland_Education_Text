@@ -3,12 +3,12 @@
 # _pycache_
 __pycache__/
 # data
-data/
-
+data/strand1/
+!data/metadata.csv
 .DS_Store
 
 # Ignore everything in outputs/
-outputs/*
+#outputs/*
 
 # keep the output csv for now
 !outputs/processed_text_data.csv
@@ -23,3 +23,16 @@ debug_file_reading.py
 
 # student work
 CS_student_work/*
+
+# virtual environment
+.venv/
+
+# Neo4j credentials
+Neo4j-*.txt
+
+# notebook autosaves
+.ipynb_checkpoints/
+
+# internal validation notes and quotes (not for public release, per JX)
+outputs/analysis_results/no_interview/sentiments/spo_validated_final.xlsx
+outputs/analysis_results/no_interview/sentiments/*_internal.*

@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     """Main data processing pipeline."""
-    logger.info("Starting Catholic/Protestant text processing pipeline")
+    logger.info("Starting Option2/Option1 text processing pipeline")
     
     # Create output directory
     OUTPUTS_DIR.mkdir(exist_ok=True)
@@ -38,7 +38,7 @@ def main():
         'CATHOLIC_DIR': CATHOLIC_DIR,
         'PROTESTANT_DIR': PROTESTANT_DIR,
         'BOTH_DIR': BOTH_DIR,
-        'FETCH_URLS': True,
+        'FETCH_URLS': False,
         'MAX_URL_CHARS': 8000,
         'USE_OPENAI_FALLBACK': False,
         'OPENAI_MODEL': 'gpt-4o-mini',
@@ -100,7 +100,7 @@ def main():
     logger.info("="*50)
     
     # Print breakdown by religious group
-    for group in ['catholic', 'protestant', 'both']:
+    for group in ['option2', 'option1', 'both']:
         group_df = df[df['religious_group'] == group]
         if not group_df.empty:
             logger.info(f"\n{group.upper()}:")

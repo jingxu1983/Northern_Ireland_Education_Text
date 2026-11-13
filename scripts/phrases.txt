@@ -1,0 +1,9 @@
+# Phrases to preserve during tokenization
+# These phrases will be treated as single tokens and not split
+# One phrase per line, case-insensitive matching
+
+# Political figures
+de valera
+
+# Historical events
+good friday 

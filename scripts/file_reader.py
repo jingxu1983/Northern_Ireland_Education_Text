@@ -156,20 +156,7 @@ class FileReader:
                         ai_summary_ranges.append((pos, end_pos))
                         start_pos = end_pos
             
-            # Calculate chunk positions to match the chunking logic
-            chunk_positions = []
-            start = 0
-            while start < len(clean_text):
-                end = start + self.config['CHUNK_SIZE']
-                if end < len(clean_text):
-                    # Try to break at sentence boundary (matching chunk_text logic)
-                    chunk = clean_text[start:end]
-                    last_period = chunk.rfind('.')
-                    if last_period > self.config['CHUNK_SIZE'] * 0.7:
-                        end = start + last_period + 1
-                chunk_positions.append((start, end))
-                start = end - 100  # overlap
-            
+            # Process chunks with proper indexing
             for i, chunk in enumerate(chunks):
                 if len(chunk) >= self.config['MIN_CHUNK_LENGTH']:
                     # Check if this specific chunk has URL content and AI summaries
@@ -276,15 +263,15 @@ class FileReader:
         """
         all_data = []
         
-        # Process Catholic files
+        # Process Option2 files
         if self.config['CATHOLIC_DIR'].exists():
-            catholic_data = self.process_directory(self.config['CATHOLIC_DIR'], chunk_large_files)
-            all_data.extend(catholic_data)
+            option2_data = self.process_directory(self.config['CATHOLIC_DIR'], chunk_large_files)
+            all_data.extend(option2_data)
         
-        # Process Protestant files
+        # Process Option1 files
         if self.config['PROTESTANT_DIR'].exists():
-            protestant_data = self.process_directory(self.config['PROTESTANT_DIR'], chunk_large_files)
-            all_data.extend(protestant_data)
+            option1_data = self.process_directory(self.config['PROTESTANT_DIR'], chunk_large_files)
+            all_data.extend(option1_data)
         
         # Process Both files
         if self.config['BOTH_DIR'].exists():

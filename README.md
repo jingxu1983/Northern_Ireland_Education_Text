@@ -1,158 +1,223 @@
 # Northern Ireland Education Text Analysis
 
-This project analyzes educational texts from Catholic and Protestant perspectives in Northern Ireland, comparing content across different document types including textbooks, policy documents, and teacher interviews.
+This project analyzes educational texts from the Option 1 and Option 2 perspectives in Northern Ireland GCSE history. It covers content analysis, topic modeling with BERTopic, sentiment analysis, and knowledge graph (KG) analysis of narrative structure. The analysis compares content across document types including textbooks, policy documents, and teacher interviews.
 
 ## Project Structure
 
 ```
 Northern_Ireland_Education_Text/
 ├── README.md
-├── requirements.txt
+├── environment.yml
+├── environment_setup.md
+├── sentiment predicate lists.txt
 ├── scripts/
 │   ├── config.py
 │   ├── utils.py
 │   ├── file_reader.py
-│   └── main.py
+│   ├── main.py
+│   ├── preprocess.py
+│   ├── stopwords.txt
+│   ├── phrases.txt
+│   ├── enhanced_knowledge_extractor.py
+│   ├── refined_ontology.py
+│   ├── kg_utilities.py
+│   ├── sentiment_lexicon.py
+│   ├── neo4j_loader_v2.py
+│   └── build_validated_spo_master.py
+├── analysis/
+│   ├── BERTopic.ipynb
+│   ├── descriptives.ipynb
+│   ├── descriptives_no_interview.ipynb
+│   ├── sentiment.ipynb
+│   ├── knowledge_graph.ipynb
+│   ├── preselected_kg_extraction.ipynb
+│   ├── preselected_kg_extraction_updated.ipynb
+│   └── narrative_network_analysis_final.ipynb
 ├── data/
+│   ├── metadata.csv
 │   └── strand1/
-│       ├── catholic/
-│       │   ├── Madden (2011) CCEA revision guide Chp 3. Changing Relationships.docx
-│       │   ├── Doherty (2001) Northern Ireland since c.1960.docx
-│       │   ├── TeacherA_catholic.docx
-│       │   └── ... (more textbooks and interviews)
-│       ├── protestant/
-│       │   ├── Madden (2007) History for CCEA GCSE Revision Guide - Chapter 3.docx
-│       │   ├── TeacherB_protestant.docx
-│       │   └── ... (more textbooks and interviews)
-│       └── both/
-│           ├── Reconciled_interviews/
-│           │   ├── TeacherA_reconciled.docx
-│           │   ├── TeacherB_reconciled.docx
-│           │   └── ... (more interviews)
-│           └── GCSE History (2017)-specification-Standard.docx
+│       ├── both/
+│       │   ├── GCSE History (2017)-specification-Standard.docx
+│       │   └── Reconciled_interviews/
+│       │       ├── TeacherF_reconciled.docx
+│       │       └── TeacherI_reconciled.docx
+│       ├── option1/
+│       │   ├── GCSE Planning Framework History Unit 1 Section B Option 1.docx
+│       │   ├── Madden (2007) History for CCEA GCSE Revision Guide - Chapter 3 (Peace, War and Neutrality).docx
+│       │   ├── Madden (2009) History for CCEA GCSE Second Edition - Chapter 2 (Peace, War and Neutrality) (1).docx
+│       │   ├── Madden (2011) ccea revision guide chp 2 peace war neutrality.docx
+│       │   ├── Madden and McBride History for CCEA GCSE Chapter 2.docx
+│       │   ├── option1_combined all.docx
+│       │   ├── TeacherC_reconciled.docx
+│       │   ├── TeacherD_reconciled.docx
+│       │   ├── TeacherE_reconciled.docx
+│       │   ├── TeacherH_reconciled.docx
+│       │   ├── TeacherL_reconciled.docx
+│       │   ├── TeacherN_reconciled.docx
+│       │   ├── TeacherO_reconciled.docx
+│       │   ├── TeacherP_reconciled.docx
+│       │   ├── TeacherQ_reconciled.docx
+│       │   └── Updated Johnston&Johnston no textboxes.docx
+│       └── option2/
+│           ├── Doherty (2001) Northern Ireland since c.1960 .docx
+│           ├── GCSE Planning Framework History Unit 1 Section B Option 2.docx
+│           ├── Madden (2007) History for CCEA GCSE Revision Guide - Chapter 4 (Changing Relationships) (2).docx
+│           ├── Madden (2009) History for CCEA GCSE Second Edition - Chapter 3 (Changing Relationships).docx
+│           ├── Madden (2011) CCEA revision guide Chp 3. Changing Relationships.docx
+│           ├── Madden and McBride History for CCEA GCSE Chapter 3.docx
+│           ├── option2_combined all.docx
+│           ├── TeacherA_reconciled.docx
+│           ├── TeacherB_reconciled.docx
+│           ├── TeacherG_reconciled.docx
+│           ├── TeacherJ_reconciled.docx
+│           ├── TeacherK_reconciled.docx
+│           ├── TeacherM_reconciled.docx
+│           └── Updated Doherty (2001) no textboxes.docx
 ├── outputs/
-│   └── processed_text_data.csv
+│   ├── processed_text_data.csv
+│   ├── cleaned_text_data.csv
+│   └── analysis_results/
+│       ├── models/
+│       ├── raw/
+│       ├── no_interview/
+│       │   └── sentiments/
+│       │       ├── spo_validated_public.xlsx
+│       │       ├── spo_validated_master.csv
+│       │       ├── spo_validated_summary.csv
+│       │       └── sentiment_shift_validated.csv
+│       ├── reduce_outlier/
+│       ├── all_visuals/
+│       ├── option1_sentiment_analysis_fixed/
+│       └── option2_sentiment_analysis_fixed/
 ```
-- `catholic/`: All Catholic perspective documents (textbooks, teacher interviews, etc.)
-- `protestant/`: All Protestant perspective documents (textbooks, teacher interviews, etc.)
+- `option2/`: All Option 2 perspective documents (textbooks, teacher interviews, etc.)
+- `option1/`: All Option 1 perspective documents (textbooks, teacher interviews, etc.)
 - `both/`: All shared/interview/policy documents (e.g., reconciled teacher interviews, policy docs)
+
+Raw data and knowledge graph outputs (`graph_data/`, `knowledge_graphs/`) are not tracked in the repository.
 
 ## Document Types
 
 - **Textbooks**: Educational materials by Madden, Doherty, Johnston
 - **Policy Documents**: GCSE Planning Frameworks and specifications
 - **Combined Resources**: Comprehensive resource collections
-- **Teacher Interviews**: Teacher interview transcripts (can be under `catholic/`, `protestant/`, or `both/`)
+- **Teacher Interviews**: Teacher interview transcripts (can be under `option2/`, `option1/`, or `both/`)
 
-## Usage
+## Quick Start for New Users
 
-1. Install dependencies:
+### 1. Environment Setup
+
+This project uses conda for dependency management. Follow these steps to set up your environment:
+
 ```bash
-pip install -r requirements.txt
+# Clone or download the project
+cd Northern_Ireland_Education_Text
+
+# Create the conda environment (recommended)
+conda env create -f environment.yml
+
+# Activate the environment
+conda activate bertopic_env
 ```
 
-2. Run the pipeline for reading and grouping raw data:
+### 2. API and Database Credentials
+
+Sentiment analysis and knowledge graph extraction use the OpenAI API, and the knowledge graph is stored in a Neo4j Aura database. Create a `.env` file in the project root with:
+
 ```bash
+OPENAI_API_KEY=your_openai_api_key
+NEO4J_URI=neo4j+s://your-instance.databases.neo4j.io
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=your_neo4j_password
+```
+
+The `.env` file and Neo4j credential files are excluded by `.gitignore`. Never commit them.
+
+### 3. Running the Analysis Pipeline
+
+#### Step 1: Process Raw Data
+```bash
+# Read and process raw documents
 python -m scripts.main
+
+# Clean and preprocess text
+python scripts/preprocess.py
 ```
 
-3. Check outputs in the `outputs/` directory for processed data.
+#### Step 2: Descriptive Analysis
+```bash
+# Generate descriptive statistics
+jupyter notebook analysis/descriptives.ipynb
+```
 
-## URL Processing with AI Fallback
+#### Step 3: Topic Modeling
+```bash
+# Run Jupyter notebook for topic analysis
+jupyter notebook analysis/BERTopic.ipynb
+```
 
-The pipeline includes URL processing capabilities for combined documents:
+#### Step 4: Sentiment Analysis
+```bash
+# Run sentiment analysis on key terms
+jupyter notebook analysis/sentiment.ipynb
+```
 
-- Raw Content Fetching: Uses enhanced web scraping to fetch live content from URLs
-- AI Knowledge-Based Fallback: When raw fetching fails, uses OpenAI to generate summaries based on training data
-- Educational Focus: AI summaries focus on Northern Ireland education and history relevance
-- Automatic URL detection: Extracts URLs from text using regex patterns
-- Configurable limits: Control character limits and timeouts via `config.py`
-- Error handling: Handles failed requests and network issues
-- Rate limiting: Includes delays between requests to be respectful to servers
+#### Step 5: Knowledge Graph Extraction
+```bash
+# Extract Subject-Predicate-Object (SPO) triples from the preselected corpus
+jupyter notebook analysis/preselected_kg_extraction_updated.ipynb
+```
+Triples are extracted with GPT-4o-mini and can be loaded into Neo4j with `scripts/neo4j_loader_v2.py` for cross-corpus queries.
 
-### Configuration
+#### Step 6: Narrative Network Analysis
+```bash
+# Build Option 1 and Option 2 networks and run the network analysis
+jupyter notebook analysis/narrative_network_analysis_final.ipynb
+```
+`narrative_network_analysis_final.ipynb` is the source of record for all knowledge graph figures and tables in the manuscript.
 
-URL processing can be configured in `scripts/config.py`:
+#### Step 7: Validated Sentiment (shared nodes)
+```bash
+# Build the master and summary tables from the manually validated SPO sentiment labels
+python scripts/build_validated_spo_master.py
+```
+This reads the team's validated workbook (kept outside the repository because it contains internal notes and source quotes) and writes the public files in `outputs/analysis_results/no_interview/sentiments/`. Cell 8e of the final notebook then redraws the sentiment shift charts from `spo_validated_public.xlsx`.
+
+### 4. Output Files
+
+Your analysis will generate:
+- `outputs/processed_text_data.csv` - Processed document data
+- `outputs/cleaned_text_data.csv` - Cleaned text for analysis
+- `outputs/analysis_results/` - Topic modeling results and visualizations; sentiment analysis results
+- `graph_data/pi_report/figures/` and `graph_data/pi_report/tables/` - Knowledge graph figures and tables
+- `outputs/analysis_results/no_interview/sentiments/` - Validated SPO sentiment master, summary and sentiment shift tables
+
+## Knowledge Graph Analysis
+
+The knowledge graph component compares how the Option 1 and Option 2 corpora structure their historical narratives.
+
+**Scripts**
+- `enhanced_knowledge_extractor.py` - LLM-based SPO triple extraction
+- `refined_ontology.py` - Entity and relation type definitions
+- `kg_utilities.py` - Entity normalization (including case-insensitive deduplication) and graph helpers
+- `sentiment_lexicon.py` - Predicate sentiment lexicon
+- `neo4j_loader_v2.py` - Loads extracted triples into Neo4j Aura
+- `build_validated_spo_master.py` - Builds the master and summary tables from the manually validated sentiment labels
+
+**Methods**
+- Triples are converted into a directed network per corpus, with entities as nodes and predicates as edges.
+- Communities are detected with a two-tier Leiden approach on the largest connected component; peripheral nodes are labeled separately.
+- Node importance is measured with betweenness centrality; PageRank is used as a robustness check.
+- Edge sentiment combines an LLM-coded predicate lexicon (`sentiment predicate lists.txt`) with the AFINN lexicon (Nielsen 2011). Where the AFINN score is non-zero, its sign determines the sentiment category; otherwise the lexicon label is used.
+- For the 21 entities shared by both corpora, sentiment labels were manually validated against the textbook passages. The sentiment shift between corpora is computed from these validated triples as (positive − negative) / (positive + negative), excluding neutral triples.
+
+## URL Processing
+
+The pipeline can fetch live content from URLs referenced in the combined documents. This is configured in `scripts/config.py`:
 
 ```python
 # URL processing parameters
 FETCH_URLS = False  # Set this to False to skip all URL processing
 MAX_URL_CHARS = 8000  # Maximum characters to extract from each URL
 URL_TIMEOUT = 15  # Timeout for URL requests in seconds
-
-# OpenAI fallback parameters
-USE_OPENAI_FALLBACK = False  # Set this to False to disable AI completely
-OPENAI_MODEL = "gpt-4o-mini"  # OpenAI model to use for summarization
-# OpenAI API key will be loaded from .env file or environment variable
-MAX_AI_SUMMARY_CHARS = 2000  # Maximum characters for AI-generated summaries
 ```
-
-### AI Fallback Setup
-
-To use the AI fallback functionality:
-
-1. Install the required libraries:
-```bash
-pip install openai python-dotenv
-```
-
-2. Set your OpenAI API key in the `.env` file:
-```bash
-# In your .env file
-OPENAI_API_KEY=your-api-key-here
-```
-
-3. The system will automatically:
-   - Try to fetch raw content from URLs using enhanced web scraping
-   - If raw fetching fails, use OpenAI to generate knowledge-based summaries
-   - Focus on Northern Ireland education and history relevance
-   - Provide summaries based on AI's training data about the domain
-
-### Testing (test file currently ignored)
-
-Run the URL processing test:
-
-```bash
-python test_url_processing.py
-```
-
-### Output Format
-
-The processed data CSV now includes two content tracking columns:
-
-- `has_url_content`: Indicates whether content includes fetched web resources
-  - `True`: Content includes fetched web resources from URLs found in the document
-  - `False`: Content is from the original document only
-
-- `has_ai_summary`: Indicates whether content includes AI-generated summaries
-  - `True`: Content includes AI-generated summaries (knowledge-based)
-  - `False`: Content is from raw URL fetching or original document only
-
-### Content Labels
-
-The system uses clear labels to identify content sources:
-- `[AI-GENERATED SUMMARY FROM KNOWLEDGE BASE]`: AI summary based on training data
-- `--- URL Content {i}: {url} ---`: Raw live web content
-- `--- AI SUMMARY {i}: {url} ---`: AI-generated summary
-
-### Content Flag Combinations
-
-The output CSV includes two content tracking columns that work together:
-
-| `has_url_content` | `has_ai_summary` | Content Type | Description |
-|-------------------|------------------|--------------|-------------|
-| `False` | `False` | Original document content only | Pure text from the source document, no URL content |
-| `True` | `False` | Raw URL content | Successfully fetched live web content from URLs |
-| `True` | `True` | AI-generated URL content | AI summaries generated when raw URL fetching failed |
-
-Note: When `has_ai_summary=True`, `has_url_content`
-
-## Data Cleaning
-
-To clean the processed text data (lowercasing, stop word removal, lemmatization, etc.), run:
-
-```bash
-python scripts/preprocess.py
-```
-
-This will create a cleaned data file at `outputs/cleaned_text_data.csv` with an additional column `cleaned_content` containing the processed text.
