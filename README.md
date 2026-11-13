@@ -22,7 +22,8 @@ Northern_Ireland_Education_Text/
 │   ├── refined_ontology.py
 │   ├── kg_utilities.py
 │   ├── sentiment_lexicon.py
-│   └── neo4j_loader_v2.py
+│   ├── neo4j_loader_v2.py
+│   └── build_validated_spo_master.py
 ├── analysis/
 │   ├── BERTopic.ipynb
 │   ├── descriptives.ipynb
@@ -31,10 +32,7 @@ Northern_Ireland_Education_Text/
 │   ├── knowledge_graph.ipynb
 │   ├── preselected_kg_extraction.ipynb
 │   ├── preselected_kg_extraction_updated.ipynb
-│   ├── narrative_network_analysis.ipynb
-│   ├── narrative_network_analysis_new.ipynb
-│   ├── narrative_network_analysis_updated.ipynb
-│   └── narrative_network_analysis_v3.ipynb
+│   └── narrative_network_analysis_final.ipynb
 ├── data/
 │   ├── metadata.csv
 │   └── strand1/
@@ -82,6 +80,11 @@ Northern_Ireland_Education_Text/
 │       ├── models/
 │       ├── raw/
 │       ├── no_interview/
+│       │   └── sentiments/
+│       │       ├── spo_validated_public.xlsx
+│       │       ├── spo_validated_master.csv
+│       │       ├── spo_validated_summary.csv
+│       │       └── sentiment_shift_validated.csv
 │       ├── reduce_outlier/
 │       ├── all_visuals/
 │       ├── option1_sentiment_analysis_fixed/
@@ -169,9 +172,16 @@ Triples are extracted with GPT-4o-mini and can be loaded into Neo4j with `script
 #### Step 6: Narrative Network Analysis
 ```bash
 # Build Option 1 and Option 2 networks and run the network analysis
-jupyter notebook analysis/narrative_network_analysis_v3.ipynb
+jupyter notebook analysis/narrative_network_analysis_final.ipynb
 ```
-`narrative_network_analysis_v3.ipynb` is the source of record for all knowledge graph figures and tables in the manuscript. Earlier versions (`narrative_network_analysis.ipynb`, `_new`, `_updated`) are kept for reference only.
+`narrative_network_analysis_final.ipynb` is the source of record for all knowledge graph figures and tables in the manuscript.
+
+#### Step 7: Validated Sentiment (shared nodes)
+```bash
+# Build the master and summary tables from the manually validated SPO sentiment labels
+python scripts/build_validated_spo_master.py
+```
+This reads the team's validated workbook (kept outside the repository because it contains internal notes and source quotes) and writes the public files in `outputs/analysis_results/no_interview/sentiments/`. Cell 8e of the final notebook then redraws the sentiment shift charts from `spo_validated_public.xlsx`.
 
 ### 4. Output Files
 
@@ -180,6 +190,7 @@ Your analysis will generate:
 - `outputs/cleaned_text_data.csv` - Cleaned text for analysis
 - `outputs/analysis_results/` - Topic modeling results and visualizations; sentiment analysis results
 - `graph_data/pi_report/figures/` and `graph_data/pi_report/tables/` - Knowledge graph figures and tables
+- `outputs/analysis_results/no_interview/sentiments/` - Validated SPO sentiment master, summary and sentiment shift tables
 
 ## Knowledge Graph Analysis
 
@@ -191,12 +202,14 @@ The knowledge graph component compares how the Option 1 and Option 2 corpora str
 - `kg_utilities.py` - Entity normalization (including case-insensitive deduplication) and graph helpers
 - `sentiment_lexicon.py` - Predicate sentiment lexicon
 - `neo4j_loader_v2.py` - Loads extracted triples into Neo4j Aura
+- `build_validated_spo_master.py` - Builds the master and summary tables from the manually validated sentiment labels
 
 **Methods**
 - Triples are converted into a directed network per corpus, with entities as nodes and predicates as edges.
 - Communities are detected with a two-tier Leiden approach on the largest connected component; peripheral nodes are labeled separately.
 - Node importance is measured with betweenness centrality; PageRank is used as a robustness check.
 - Edge sentiment combines an LLM-coded predicate lexicon (`sentiment predicate lists.txt`) with the AFINN lexicon (Nielsen 2011). Where the AFINN score is non-zero, its sign determines the sentiment category; otherwise the lexicon label is used.
+- For the 21 entities shared by both corpora, sentiment labels were manually validated against the textbook passages. The sentiment shift between corpora is computed from these validated triples as (positive − negative) / (positive + negative), excluding neutral triples.
 
 ## URL Processing
 
